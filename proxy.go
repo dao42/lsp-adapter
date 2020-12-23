@@ -217,6 +217,12 @@ func (p *cloneProxy) handleClientRequest(ctx context.Context, conn *jsonrpc2.Con
 				log.Println("CloneProxy.handleClientRequest(): running beforeInitializeHook failed", err)
 			}
 		}
+	} else if req.Method == "workspace/didChangeWorkspaceFolders" {
+		globs := strings.FieldsFunc(*glob, func(r rune) bool { return r == ':' })
+		if err := p.cloneWorkspaceToCache(globs); err != nil {
+			log.Println("CloneProxy.handleClientRequest(): cloning workspace failed during initialize", err)
+			return
+		}
 	}
 
 	rTripper := roundTripper{
