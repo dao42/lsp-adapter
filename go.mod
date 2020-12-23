@@ -1,4 +1,4 @@
-module github.com/sourcegraph/lsp-adapter
+module github.com/dao42/lsp-adapter
 
 go 1.14
 
