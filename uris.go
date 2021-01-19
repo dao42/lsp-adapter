@@ -31,6 +31,12 @@ func (p *cloneProxy) cleanWorkspaceCache() error {
 	return os.RemoveAll(p.workspaceCacheDir())
 }
 
+func (p *cloneProxy) removeWorkspaceCache(workspaceName string) error {
+	path := filepath.Join(*cacheDir, p.sessionID.String(), workspaceName)
+	log.Printf("Removing workspace cache from %s", path)
+	return os.RemoveAll(path)
+}
+
 func (p *cloneProxy) workspaceCacheDir() string {
 	return filepath.Join(*cacheDir, p.sessionID.String())
 }

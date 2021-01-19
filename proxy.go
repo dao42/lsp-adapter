@@ -219,9 +219,29 @@ func (p *cloneProxy) handleClientRequest(ctx context.Context, conn *jsonrpc2.Con
 		}
 	} else if req.Method == "workspace/didChangeWorkspaceFolders" {
 		globs := strings.FieldsFunc(*glob, func(r rune) bool { return r == ':' })
-		if err := p.cloneWorkspaceToCache(globs); err != nil {
-			log.Println("CloneProxy.handleClientRequest(): cloning workspace failed during initialize", err)
-			return
+
+		var params map[string]interface{}
+		json.Unmarshal(*req.Params, &params)
+		event := params["event"].(map[string]interface{})
+		addFolders := event["added"].([]interface {})
+		removedFolders := event["removed"].([]interface {})
+
+		if len(removedFolders) > 0 {
+			for _, s := range removedFolders {
+				item := s.(map[string]interface{})
+				workspaceName := item["name"].(string)
+				err := p.removeWorkspaceCache(workspaceName)
+				if (err != nil) {
+					log.Println("CloneProxy.handleClientRequest(): remove workspace failed during initialize", err)
+				}
+			}
+		}
+
+		if len(addFolders) > 0 {
+			if err := p.cloneWorkspaceToCache(globs); err != nil {
+				log.Println("CloneProxy.handleClientRequest(): cloning workspace failed during initialize", err)
+				return
+			}
 		}
 	}
 
